@@ -1,8 +1,14 @@
 const express = require("express");
-const { NotFoundError } = require("../expressError");
+const { ExpressError,
+    NotFoundError,
+    UnauthorizedError,
+    BadRequestError,
+    ForbiddenError, } = require("../expressError");
 
 const db = require("../db");
 const router = new express.Router();
+
+//DB REQS ARE ASYNC, MUST BE AWAITED DON'T FORGET
 
 
 /** Returns list of companies, like {companies: [{code, name}, ...]} */
@@ -57,8 +63,28 @@ router.post("/", async function (req, res) {
  * Needs to be given JSON like: {name, description}
  * Returns update company object: {company: {code, name, description}}
  * */
-router.put("/:code", function (req, res) {
+router.put("/:code", async function (req, res) {
+    const { name, description } = req.body;
 
+    if(!req.body.name || !req.body.description){
+        throw new BadRequestError(`Don't forget to send over 'name' and 'description' info!`);
+    }
+    const code = req.params.code;
+
+    const results = await db.query(
+        `UPDATE companies 
+        SET name = $2, description = $3
+        WHERE code = $1
+        RETURNING code, name, description`, 
+        [code, name, description]
+    )
+    const company = results.rows[0];
+
+    if(!company){
+        throw new NotFoundError(`${code} is not a valid company!`);
+    }
+
+    return res.json({ company });
 })
 
 
@@ -66,7 +92,7 @@ router.put("/:code", function (req, res) {
  * Should return 404 if company cannot be found.
  * Returns {status: "deleted"}
  * */
-router.delete("/:code", function (req, res) {
+router.delete("/:code", async function (req, res) {
 
 })
 
