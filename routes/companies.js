@@ -1,9 +1,7 @@
 const express = require("express");
-const { ExpressError,
-  NotFoundError,
-  UnauthorizedError,
+const { NotFoundError,
   BadRequestError,
-  ForbiddenError, } = require("../expressError");
+} = require("../expressError");
 
 const db = require("../db");
 const router = new express.Router();
@@ -11,7 +9,7 @@ const router = new express.Router();
 //DB REQS ARE ASYNC, MUST BE AWAITED DON'T FORGET
 
 
-/** Returns list of companies, like {companies: [{code, name}, ...]} */
+/** Returns list of companies, output {companies: [{code, name}, ...]} */
 router.get("/", async function (req, res) {
   const results = await db.query(
     `SELECT code, name, description
@@ -32,12 +30,12 @@ router.get("/:code", async function (req, res) {
           FROM companies
           WHERE code = $1`, [code]
   );
-  const companies = results.rows[0];
-  if (!companies) {
+  const company = results.rows[0];
+  if (!company) {
     throw new NotFoundError('Company code does not exist!')
   };
 
-  return res.json({ companies });
+  return res.json({ company });
 })
 
 
@@ -95,9 +93,16 @@ router.put("/:code", async function (req, res) {
 router.delete("/:code", async function (req, res) {
   const code = req.params.code;
 
+  // removes results variable
   const results = await db.query(
     `DELETE FROM companies
-    WHERE code = $1`, [code]);
+    WHERE code = $1
+    RETURNING code`, [code]);
+
+  if (results.rows.length === 0) {
+    throw new NotFoundError("Company not found, did not delete anything. haha.");
+  }
+  // returning -> something from what was just deleted (it's possible to send data from a deleted element) or try looking into what results properties there are
 
   return res.json({ status: "deleted" });
 })
