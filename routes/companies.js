@@ -6,8 +6,8 @@ const router = new express.Router();
 
 
 /** Returns list of companies, like {companies: [{code, name}, ...]} */
-router.get("/", function (req, res) {
-  const results = db.query(
+router.get("/", async function (req, res) {
+  const results = await db.query(
     `SELECT code, name, description
     FROM companies`);
   const companies = results.rows;
@@ -21,20 +21,17 @@ router.get("/", function (req, res) {
  * */
 router.get("/:code", async function (req, res) {
   const code = req.params.code;
-  let companies; 
-  try {
-    const results = await db.query(
-        `SELECT code, name, description
-        FROM companies
-        WHERE code = $1`, [code]
-      );
-      companies = results.rows[0];
-      
-  } catch (error) {
-    throw new NotFoundError('Company code does not exist!');
-  }
+  const results = await db.query(
+    `SELECT code, name, description
+          FROM companies
+          WHERE code = $1`, [code]
+  );
+  const companies = results.rows[0];
+  if (!companies) {
+    throw new NotFoundError('Company code does not exist!')
+  };
 
-  return res.json({ companies })
+  return res.json({ companies });
 })
 
 
@@ -42,8 +39,17 @@ router.get("/:code", async function (req, res) {
  * Needs to be given JSON like: {code, name, description}
  * Returns obj of new company: {company: {code, name, description}}
  * */
-router.post("/", function (req, res) {
+router.post("/", async function (req, res) {
+  const { code, name, description } = req.body;
 
+  const results = await db.query(
+    `INSERT INTO companies(code, name, description)
+    VALUES ($1, $2, $3)
+    RETURNING code, name, description`, [code, name, description]
+  );
+
+  const company = results.rows[0];
+  return res.status(201).json({ company });
 })
 
 /** Edit existing company.
