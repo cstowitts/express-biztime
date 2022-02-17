@@ -21,12 +21,19 @@ router.get("/", function (req, res) {
  * */
 router.get("/:code", async function (req, res) {
   const code = req.params.code;
-  const results = await db.query(
-    `SELECT code, name, description
-    FROM companies
-    WHERE code = $1`, [code]
-  );
-  const companies = results.rows[0];
+  let companies; 
+  try {
+    const results = await db.query(
+        `SELECT code, name, description
+        FROM companies
+        WHERE code = $1`, [code]
+      );
+      companies = results.rows[0];
+      
+  } catch (error) {
+    throw new NotFoundError('Company code does not exist!');
+  }
+
   return res.json({ companies })
 })
 
