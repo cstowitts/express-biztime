@@ -7,6 +7,15 @@ const app = express();
 
 app.use(express.json());
 
+const coRoutes = require("./routes/companies");
+
+
+
+
+
+
+//register routes
+app.use("/companies", coRoutes);
 
 /** 404 handler: matches unmatched routes; raises NotFoundError. */
 app.use(function (req, res, next) {
