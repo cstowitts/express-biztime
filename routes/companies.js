@@ -1,9 +1,9 @@
 const express = require("express");
 const { ExpressError,
-    NotFoundError,
-    UnauthorizedError,
-    BadRequestError,
-    ForbiddenError, } = require("../expressError");
+  NotFoundError,
+  UnauthorizedError,
+  BadRequestError,
+  ForbiddenError, } = require("../expressError");
 
 const db = require("../db");
 const router = new express.Router();
@@ -64,27 +64,27 @@ router.post("/", async function (req, res) {
  * Returns update company object: {company: {code, name, description}}
  * */
 router.put("/:code", async function (req, res) {
-    const { name, description } = req.body;
+  const { name, description } = req.body;
 
-    if(!req.body.name || !req.body.description){
-        throw new BadRequestError(`Don't forget to send over 'name' and 'description' info!`);
-    }
-    const code = req.params.code;
+  if (!req.body.name || !req.body.description) {
+    throw new BadRequestError(`Don't forget to send over 'name' and 'description' info!`);
+  }
+  const code = req.params.code;
 
-    const results = await db.query(
-        `UPDATE companies 
+  const results = await db.query(
+    `UPDATE companies 
         SET name = $2, description = $3
         WHERE code = $1
-        RETURNING code, name, description`, 
-        [code, name, description]
-    )
-    const company = results.rows[0];
+        RETURNING code, name, description`,
+    [code, name, description]
+  )
+  const company = results.rows[0];
 
-    if(!company){
-        throw new NotFoundError(`${code} is not a valid company!`);
-    }
+  if (!company) {
+    throw new NotFoundError(`${code} is not a valid company!`);
+  }
 
-    return res.json({ company });
+  return res.json({ company });
 })
 
 
@@ -93,9 +93,14 @@ router.put("/:code", async function (req, res) {
  * Returns {status: "deleted"}
  * */
 router.delete("/:code", async function (req, res) {
+  const code = req.params.code;
 
+  const results = await db.query(
+    `DELETE FROM companies
+    WHERE code = $1`, [code]);
+
+  return res.json({ status: "deleted" });
 })
-
 
 
 
