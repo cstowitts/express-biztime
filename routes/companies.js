@@ -9,7 +9,7 @@ const router = new express.Router();
 //DB REQS ARE ASYNC, MUST BE AWAITED DON'T FORGET
 
 
-/** Returns list of companies, output {companies: [{code, name}, ...]} */
+/** Returns list of companies, returns {companies: [{code, name}, ...]} */
 router.get("/", async function (req, res) {
   const results = await db.query(
     `SELECT code, name, description
@@ -40,7 +40,7 @@ router.get("/:code", async function (req, res) {
 
 
 /** Adds a company.
- * Needs to be given JSON like: {code, name, description}
+ * Needs to be given JSON: {code, name, description}
  * Returns obj of new company: {company: {code, name, description}}
  * */
 router.post("/", async function (req, res) {

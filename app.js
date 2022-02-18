@@ -8,14 +8,29 @@ const app = express();
 app.use(express.json());
 
 const coRoutes = require("./routes/companies");
+const invoicesRoutes = require("./routes/invoices");
 
 
 
 
 
 
-//register routes
+//register companies routes
 app.use("/companies", coRoutes);
+
+//register invoices routes
+app.use("/invoices", invoicesRoutes);
+
+
+
+
+
+
+
+
+
+
+
 
 /** 404 handler: matches unmatched routes; raises NotFoundError. */
 app.use(function (req, res, next) {
