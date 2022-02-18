@@ -19,7 +19,8 @@ router.get("/", async function (req, res) {
 })
 
 
-/** Return obj of company: {company: {code, name, description}}
+/** Return obj of company: 
+ * {company: {code, name, description, invoices: [id, ...]}}
  * If the company given cannot be found, 
  * this should return a 404 status response. 
  * */
@@ -31,9 +32,23 @@ router.get("/:code", async function (req, res) {
           WHERE code = $1`, [code]
   );
   const company = results.rows[0];
+
   if (!company) {
     throw new NotFoundError('Company code does not exist!')
   };
+
+  const inResults = await db.query(
+      `SELECT id, comp_code, amt, paid, add_date, paid_date
+            FROM invoices as i
+            JOIN companies as c 
+            ON i.comp_code = c.code
+            WHERE i.comp_code = $1`, 
+            [code]
+  );
+
+  const invoices = inResults.rows;
+
+  company.invoices = invoices;
 
   return res.json({ company });
 })
@@ -104,7 +119,7 @@ router.delete("/:code", async function (req, res) {
   }
   // returning -> something from what was just deleted (it's possible to send data from a deleted element) or try looking into what results properties there are
 
-  return res.json({ status: "deleted" });
+  return res.json({ status: "company deleted" });
 })
 
 

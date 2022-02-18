@@ -51,7 +51,6 @@ router.get("/:id", async function (req, res) {
 })
 
 
-
 /** Adds an invoice.
  * Needs to be passed in JSON body of: {comp_code, amt}
  * Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}}
@@ -104,6 +103,22 @@ router.put("/:id", async function (req, res) {
  * Returns: {status: "deleted"}
  * */
 router.delete("/:id", async function (req, res) {
+    const id = req.params.id;
+
+    const results = await db.query(
+        `DELETE FROM invoices
+        WHERE id = $1
+        RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+        [id]
+    );
+
+    // console.log("results obj = ", results);
+
+    if (results.rows.length === 0) {
+        throw new NotFoundError("Invoice not found, nothing deleted.");
+    };
+
+    return res.json({ status: "invoice deleted" });
 
 })
 

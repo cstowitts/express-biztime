@@ -14,7 +14,6 @@ const invoicesRoutes = require("./routes/invoices");
 
 
 
-
 //register companies routes
 app.use("/companies", coRoutes);
 
